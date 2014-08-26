@@ -259,19 +259,19 @@ IFS=$OLDIFS
 if [[ ${DOMAINS_LIMIT} = "0" ]]; then
 	[[ -f ${EXTRACTED_MAP} ]] && rm ${EXTRACTED_MAP}
 	echo -e "\n-> Sending original relay recipient map ${RELAY_RECIPIENT_MAP}..."
-	scp -C -c blowfish ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}
+	rsync -cave ssh ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}
 	if [ $? -ne 0 ]; then
 		ERROR_MESSAGE=$(echo $?)
-		error "Error while sending file:\nscp -C -c blowfish ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}.\n${ERROR_MESSAGE}."
+		error "Error while sending file:\nrsync -cave ssh ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}.\n${ERROR_MESSAGE}."
 	else
 		echo -e "\n-> Sending file to ${REMOTE_SERVER_ADDRESS}: OK"
 	fi
 elif [[ ${DOMAINS_LIMIT} = "1" ]]; then
 	echo -e "\n-> Relay recipient map extracted to ${EXTRACTED_MAP}..."
-	scp -C -c blowfish ${EXTRACTED_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}
+	rsync -cave ssh ${EXTRACTED_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}
 	if [ $? -ne 0 ]; then
 		ERROR_MESSAGE=$(echo $?)
-		error "Error while sending file:\nscp -C -c blowfish ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}.\n${ERROR_MESSAGE}."
+		error "Error while sending file:\nrsync -cave ssh ${EXTRACTED_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}.\n${ERROR_MESSAGE}."
 	else
 		echo -e "\n-> Sending file to ${REMOTE_SERVER_ADDRESS}: OK"
 	fi
