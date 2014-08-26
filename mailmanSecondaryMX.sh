@@ -148,7 +148,7 @@ exec >> ${LOG_TEMP}
 echo -e "\n****************************** `date` ******************************\n"
 echo -e "$0 started with options:"
 echo -e "\t-s ${REMOTE_SERVER_ADDRESS} (secondary server address)"
-echo -e "\t-r ${RELAY_RECIPIENT_MAP} (local relay receipient map)"
+echo -e "\t-r ${RELAY_RECIPIENT_MAP} (local relay recipient map)"
 echo -e "\t-u ${REMOTE_SERVER_USER} (remote user)"
 echo -e "\t-R ${REMOTE_RELAY_RECIPIENT_MAP} (remote postfix map)"
 echo -e "\t-c ${REMOTE_SERVER_POSTMAP_CMD} (remote postmap command)"
