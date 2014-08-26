@@ -116,7 +116,7 @@ do
 		d) 	DOMAINS=${OPTARG}
 			if [[ ${DOMAINS} != "alldomains" ]] 
 				then
-				echo ${DOMAINS} | perl -p -e 's/%/\n/g' | perl -p -e 's/ //g' | awk '!x[$0]++' >> $LIST_DOMAINS
+				echo ${DOMAINS} | perl -p -e 's/%/\n/g' | perl -p -e 's/ //g' | awk '!x[$0]++' >> ${LIST_DOMAINS}
 				DOMAINS_LIMIT=1
 			elif [[ ${DOMAINS} = "alldomains" ]]
 				then
@@ -154,7 +154,7 @@ echo -e "\t-R ${REMOTE_RELAY_RECIPIENT_MAP} (remote postfix map)"
 echo -e "\t-c ${REMOTE_SERVER_POSTMAP_CMD} (remote postmap command)"
 if [[ ${DOMAINS_LIMIT} = "1" ]]; then
 	echo -e "\t-d (domains to extract):"
-	for LINE in ${DOMAINS}
+	for LINE in $(cat ${LIST_DOMAINS})
 	do
 		echo -e "\t   > ${LINE}"
 	done
