@@ -20,7 +20,7 @@ Pré-requis avant installation et utilisation
 ---------
 ### 1. Sur le serveur primaire sur lequel est exécuté l'outil `mailmanSecondaryMX.sh` 
 
-- doit utiliser Mailman en configuration avec domaines vrituels (cf. [GNU Mailman Virtual domains](http://www.list.org/mailman-install/postfix-virtual.html))
+- doit utiliser Mailman en configuration avec domaines virtuels (cf. [GNU Mailman Virtual domains](http://www.list.org/mailman-install/postfix-virtual.html))
 - doit disposer d'un fichier `virtual_alias_maps` ou `relay_recipient_maps` pour Mailman correctement déclaré dans la configuration de Postfix (cf. `/etc/postfix/main.cf`), par exemple `relay_recipient_maps = hash:/var/lib/mailman/data/virtual-mailman`
 - la table `virtual_alias_maps` ou `relay_recipient_maps` pour Mailman doit être alimentée (fichier non vide)
 - le serveur MX primaire doit pouvoir accéder au serveur MX secondaire en SSH avec authentification par clé ([voir ici comment configurer les clés SSH] (https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2))
