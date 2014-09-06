@@ -86,7 +86,7 @@ error () {
 
 alldone () {
 	# Sleep to avoid multiple instances
-	sleep 30
+	[ $1 -ne 2 ] && sleep 30
 	# Redirect standard outpout
 	exec 1>&6 6>&-
 	# Logging if needed 
@@ -190,7 +190,7 @@ if [ -f "${LOCKSYNC}" ]; then
     if [ -f /proc/${PIDLOCK}/exe ]; then
 		# If yes ... kill the script
         echo -e "> Process still active. Please try again later.\nEnd."
-        alldone 1
+        alldone 2
     else
 		# If not, cleaning lock file
         echo "> Process is complete: cleaning lock file."
