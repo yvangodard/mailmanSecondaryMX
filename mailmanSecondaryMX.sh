@@ -10,7 +10,7 @@
 #              Yvan Godard                 #
 #          godardyvan@gmail.com            #
 #                                          #
-#      Version 0.1 -- august, 23 2014      #
+#      Version 0.2 -- august, 29 2014      #
 #             Under Licence                #
 #     Creative Commons 4.0 BY NC SA        #
 #                                          #
@@ -19,7 +19,7 @@
 #------------------------------------------#
 
 # Variables initialisation
-VERSION="mailmanSecondaryMX v0.1 - 2014, Yvan Godard [godardyvan@gmail.com]"
+VERSION="mailmanSecondaryMX v0.2 - 2014, Yvan Godard [godardyvan@gmail.com]"
 help="no"
 SCRIPT_DIR=$(dirname $0)
 SCRIPT_NAME=$(basename $0)
@@ -85,6 +85,8 @@ error () {
 }
 
 alldone () {
+	# Sleep to avoid multiple instances
+	sleep 30
 	# Redirect standard outpout
 	exec 1>&6 6>&-
 	# Logging if needed 
@@ -94,7 +96,12 @@ alldone () {
 	[ $EMAIL_LEVEL -ne 0 ] && [ $1 -ne 0 ] && cat $LOG_TEMP | mail -s "[ERROR] ${SCRIPT_NAME} on ${HOSTNAME}" ${EMAIL_ADDRESS}
 	[ $EMAIL_LEVEL -eq 2 ] && [ $1 -eq 0 ] && cat $LOG_TEMP | mail -s "[OK] ${SCRIPT_NAME} on ${HOSTNAME}" ${EMAIL_ADDRESS}
 	# Remove temp files/folder
-	rm -R /tmp/mailmanSecondaryMX*
+	[ -f ${EXTRACTED_MAP} ] && rm -R ${EXTRACTED_MAP}
+	[ -f ${EXTRACTED_MAP_TEMP} ] && rm -R ${EXTRACTED_MAP_TEMP}
+	[ -f ${LIST_DOMAINS} ] && rm -R ${LIST_DOMAINS}
+	[ -f ${LOG_TEMP} ] && rm -R ${LOG_TEMP}
+	# Remove lock file
+	[ $1 -eq 0 ] && [ -e ${LOCKFILE} ] && rm ${LOCKSYNC}
 	exit ${1}
 }
 
@@ -171,6 +178,28 @@ if [[ ${LOG_ACTIVE} != "0" ]]
 	echo -e "\t-j ${LOG} (log file)"
 fi
 echo ""
+
+# Lock system
+export LOCKSYNC="/var/run/${SCRIPT_NAME}.lock"
+PID=$$
+# If lock file exists
+if [ -f "${LOCKSYNC}" ]; then
+	echo "Previous lock file found..."
+	PIDLOCK=`cat ${LOCKSYNC}`
+	# Test if proccess is already running
+    if [ -f /proc/${PIDLOCK}/exe ]; then
+		# If yes ... kill the script
+        echo -e "> Process still active. Please try again later.\nEnd."
+        alldone 1
+    else
+		# If not, cleaning lock file
+        echo "> Process is complete: cleaning lock file."
+        rm ${LOCKSYNC}
+    fi
+fi
+# Create lock file
+echo "Create lock file "${LOCKSYNC}
+echo ${PID} > ${LOCKSYNC}
 
 # Test of sending email parameter and check the consistency of the parameter email address
 if [[ ${EMAIL_REPORT} = "forcemail" ]]
@@ -258,32 +287,31 @@ IFS=$OLDIFS
 # Step 2 : send file to secondary MX Server
 if [[ ${DOMAINS_LIMIT} = "0" ]]; then
 	[[ -f ${EXTRACTED_MAP} ]] && rm ${EXTRACTED_MAP}
-	echo -e "\n-> Sending original relay recipient map ${RELAY_RECIPIENT_MAP}..."
+	echo -e "\n-> Sending original relay recipient map ${RELAY_RECIPIENT_MAP}...\n"
 	rsync -cave ssh ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}
 	if [ $? -ne 0 ]; then
 		ERROR_MESSAGE=$(echo $?)
 		error "Error while sending file:\nrsync -cave ssh ${RELAY_RECIPIENT_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}.\n${ERROR_MESSAGE}."
 	else
-		echo -e "\n-> Sending file to ${REMOTE_SERVER_ADDRESS}: OK"
+		echo -e "-> Sending file to ${REMOTE_SERVER_ADDRESS}: OK"
 	fi
 elif [[ ${DOMAINS_LIMIT} = "1" ]]; then
-	echo -e "\n-> Relay recipient map extracted to ${EXTRACTED_MAP}..."
+	echo -e "\n-> Relay recipient map extracted to ${EXTRACTED_MAP}...\n"
 	rsync -cave ssh ${EXTRACTED_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}
 	if [ $? -ne 0 ]; then
 		ERROR_MESSAGE=$(echo $?)
 		error "Error while sending file:\nrsync -cave ssh ${EXTRACTED_MAP} ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS}:${REMOTE_RELAY_RECIPIENT_MAP}.\n${ERROR_MESSAGE}."
 	else
-		echo -e "\n-> Sending file to ${REMOTE_SERVER_ADDRESS}: OK"
+		echo -e "-> Sending file to ${REMOTE_SERVER_ADDRESS}: OK\n"
 	fi
 fi
 
 # Step 3 : postmap 
-ssh ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS} '${REMOTE_SERVER_POSTMAP_CMD} ${REMOTE_RELAY_RECIPIENT_MAP}'
-if [ $? -ne 0 ]; then
-	ERROR_MESSAGE=$(echo $?)
-	error "Error while running command:\nssh ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS} '${REMOTE_SERVER_POSTMAP_CMD} ${REMOTE_RELAY_RECIPIENT_MAP}'.\n${ERROR_MESSAGE}."
+ERROR_SSH=$(ssh $REMOTE_SERVER_USER@$REMOTE_SERVER_ADDRESS "$REMOTE_SERVER_POSTMAP_CMD $REMOTE_RELAY_RECIPIENT_MAP && echo \$?")
+if [[ ${ERROR_SSH} -ne 0 ]]; then
+	error "Error while running command:\nssh ${REMOTE_SERVER_USER}@${REMOTE_SERVER_ADDRESS} '${REMOTE_SERVER_POSTMAP_CMD} ${REMOTE_RELAY_RECIPIENT_MAP}'."
 else
-	echo -e "\n-> Postmap on remote server (${REMOTE_SERVER_POSTMAP_CMD} ${REMOTE_RELAY_RECIPIENT_MAP}): OK"
+	echo -e "-> Postmap on remote server (${REMOTE_SERVER_POSTMAP_CMD} ${REMOTE_RELAY_RECIPIENT_MAP}): OK"
 fi
 
 echo ""
