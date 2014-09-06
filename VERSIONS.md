@@ -10,6 +10,9 @@ Versions
 
 \! Known issue / missing feature
 
+#### 0.3
+------------
+\* add lock system to avoid multiple instances
 
 #### 0.2
 ------------

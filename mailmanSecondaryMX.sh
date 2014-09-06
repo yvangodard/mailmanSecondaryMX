@@ -10,7 +10,7 @@
 #              Yvan Godard                 #
 #          godardyvan@gmail.com            #
 #                                          #
-#      Version 0.2 -- august, 29 2014      #
+#      Version 0.3 -- august, 29 2014      #
 #             Under Licence                #
 #     Creative Commons 4.0 BY NC SA        #
 #                                          #
@@ -19,7 +19,7 @@
 #------------------------------------------#
 
 # Variables initialisation
-VERSION="mailmanSecondaryMX v0.2 - 2014, Yvan Godard [godardyvan@gmail.com]"
+VERSION="mailmanSecondaryMX v0.3 - 2014, Yvan Godard [godardyvan@gmail.com]"
 help="no"
 SCRIPT_DIR=$(dirname $0)
 SCRIPT_NAME=$(basename $0)
